@@ -1,0 +1,56 @@
+# before:
+#   hooks:
+#   - ./scripts/completions.sh
+builds:
+- binary: akslifecycle
+  main: ./
+  goos:
+  - darwin
+  - linux
+  goarch:
+  - amd64
+  - arm64
+  env:
+  - CGO_ENABLED=0
+  # ldflags:
+  # - -s -w -X github.com/muandane/akslifecycle/cmd.version={{.Version}}
+
+release:
+  prerelease: auto
+
+universal_binaries:
+- replace: true
+
+archives:
+- name_template: >-
+    {{- .ProjectName }}_ {{- .Version }}_ {{- title .Os }}_ {{- if eq .Arch "amd64" }}x86_64 {{- else if eq .Arch "386" }}i386 {{- else }}{{ .Arch }}{{ end }} {{- if .Arm }}v{{ .Arm }}{{ end -}}
+  format_overrides:
+  - goos: windows
+    format: zip
+  builds_info:
+    group: root
+    owner: root
+  files:
+  - README.md
+  - LICENSE
+  # - completions/*
+
+# brews:
+# - name: akslifecycle
+#   homepage: "https://github.com/muandane/homebrew-tap"
+#   repository:
+#     owner: muandane
+#     name: homebrew-tap
+#   folder: Formula
+#   dependencies:
+#   - name: git
+#   commit_author:
+#     name: muandane
+#     email: zmoualhi@outlook.com
+#   extra_install: |-
+#     bash_completion.install "completions/akslifecycle.bash" => "akslifecycle"
+#     zsh_completion.install "completions/akslifecycle.zsh" => "_akslifecycle"
+#     fish_completion.install "completions/akslifecycle.fish"
+
+checksum:
+  name_template: 'checksums.txt'
