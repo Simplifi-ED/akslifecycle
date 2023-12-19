@@ -1,0 +1,13 @@
+resources:
+- ResourceGroupName: rg-caas-dev-blue
+  ClusterName: aks-caas-dev-blue
+  nodePools:
+  - bluew
+  startSchedule: "42 18 * * 1-5"
+  stopSchedule: "50 18 * * 1-5"
+- ResourceGroupName: rg-caas-dev-green
+  ClusterName: aks-caas-dev-green
+  nodePools:
+  - greenw
+  startSchedule: "42 18 * * 1-5"
+  stopSchedule: "50 18 * * 1-5"

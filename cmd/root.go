@@ -2,50 +2,80 @@ package cmd
 
 import (
 	"fmt"
-	"log"
-
 	"os"
 
-	"github.com/muandane/akslifecycle/internal"
 	"github.com/muandane/akslifecycle/utils/lifecycle"
+
 	"github.com/robfig/cron/v3"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
+type Resource struct {
+	ResourceGroupName string
+	ClusterName       string
+	NodePools         []string
+	StartSchedule     string
+	StopSchedule      string
+}
+
+type Config struct {
+	Resources []Resource
+}
+
 var rootCmd = &cobra.Command{
-	Use:   "goji",
-	Short: "Goji CLI",
-	Long:  `Goji is a cli tool to generate conventional commits with emojis`,
+	Use:   "akslifecycle",
+	Short: "akslifecycle CLI",
+	Long:  `akslifecycle is a cli tool to start & stop nodes with cron schedule`,
 	Run: func(cmd *cobra.Command, args []string) {
-		c := cron.New()
-		clusterName := os.Getenv("CLUSTER_NAME")
-		resourceGroup := os.Getenv("RESOURCE_GROUP")
-		nodepoolName := os.Getenv("NODEPOOL_NAME")
-		startSchedule := os.Getenv("START_CLUSTER") // Every day at 8am
-		stopSchedule := os.Getenv("STOP_CLUSTER")   // Every day at 5pm
+		viper.SetConfigName("config")
+		viper.SetConfigType("yaml")
+		viper.AddConfigPath(".")
 
-		azureAuth := internal.NewAzureAuth()
-		azureAuth.LogIntoAzure()
-
-		_, err := c.AddFunc(startSchedule, func() {
-			lifecycle.StartNode(&clusterName, &resourceGroup, &nodepoolName)
-			log.Println("Waiting for next cron job...")
-		})
+		err := viper.ReadInConfig()
 		if err != nil {
-			fmt.Println("Failed to add cron job:", err)
+			fmt.Println("Failed to read config file:", err)
+		}
+		var config Config
+		err = viper.Unmarshal(&config)
+		if err != nil {
+			panic(fmt.Errorf("unable to decode into struct, %v", err))
 		}
 
-		_, err = c.AddFunc(stopSchedule, func() {
-			lifecycle.StopNode(&clusterName, &resourceGroup, &nodepoolName)
-			log.Println("Waiting for next cron job...")
-		})
-		if err != nil {
-			fmt.Println("Failed to add cron job:", err)
-		}
-		// Start the cron scheduler
-		c.Start()
+		for _, resource := range config.Resources {
+			go func(resource Resource) {
+				c := cron.New()
+				clusterName := resource.ClusterName
+				resourceGroup := resource.ResourceGroupName
+				startSchedule := resource.StartSchedule
+				stopSchedule := resource.StopSchedule
 
-		// Keep the program running
+				// Define the schedule for starting the program
+				_, err := c.AddFunc(startSchedule, func() {
+					for _, nodepool := range resource.NodePools {
+						lifecycle.StartNode(&clusterName, &resourceGroup, &nodepool)
+						fmt.Println("Waiting for next cron job...")
+					}
+				})
+				if err != nil {
+					fmt.Println("Failed to add cron job:", err)
+				}
+				// Define the schedule for stopping the program
+				_, err = c.AddFunc(stopSchedule, func() {
+					for _, nodepool := range resource.NodePools {
+						lifecycle.StopNode(&clusterName, &resourceGroup, &nodepool)
+						fmt.Println("Waiting for next cron job...")
+					}
+				})
+				if err != nil {
+					fmt.Println("Failed to add cron job:", err)
+				}
+
+				// Start the cron scheduler
+				c.Start()
+
+			}(resource)
+		}
 		select {}
 	},
 }
