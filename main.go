@@ -1,17 +1,10 @@
+// Entrypoint to goji the conventional commit message generator
 package main
 
-var (
-	subscriptionID    string
-	objectID          string
-	clientSecret      string
-	clientID          string
-	TenantID          string
-	location          string
-	resourceGroupName string
-	ClustersName      string
-	configName        string
+import (
+	"github.com/muandane/lifecycle/cmd"
 )
 
 func main() {
-	cmd.lifeCycle()
+	cmd.Execute()
 }
