@@ -4,10 +4,7 @@ WORKDIR /akslifecycle
 
 COPY go.mod go.sum ./
 RUN go mod download
-COPY internal internal
-COPY cmd cmd
-COPY utils utils
-COPY *.go ./
+COPY . ./
 
 RUN CGO_ENABLED=0 go build -o /akslifecycle
 

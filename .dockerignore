@@ -1,0 +1,9 @@
+.github
+.vscode
+/notes
+/skins
+README.md
+LICENSE
+.gitignore
+.go*.yml
+config-example.yml
