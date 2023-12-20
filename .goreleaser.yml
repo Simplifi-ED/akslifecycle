@@ -43,35 +43,51 @@ dockers:
   goos: linux
   goarch: amd64
   image_templates:
-  - "mundane/{{ .ProjectName }}:{{ .Version }}-amd64"
-  - "mundane/{{ .ProjectName }}:latest-amd64"
+  - "Simplifi-ED/{{ .ProjectName }}:{{ .Version }}-amd64"
+  - "Simplifi-ED/{{ .ProjectName }}:latest-amd64"
   build_flag_templates:
   - "--platform=linux/amd64"
   - "--label=org.opencontainers.image.created={{.Date}}"
   - "--label=org.opencontainers.image.title={{.ProjectName}}"
   - "--label=org.opencontainers.image.revision={{.FullCommit}}"
   - "--label=org.opencontainers.image.version={{.Version}}"
+  extra_files:
+  - go.mod
+  - go.sum
+  - utils/startNode.go
+  - utils/stopNode.go
+  - internal/azure.go
+  - cmd/root.go
+  - main.go
 - use: buildx
   goos: linux
   goarch: arm64
   image_templates:
-  - "mundane/{{ .ProjectName }}:{{ .Version }}-armv64"
-  - "mundane/{{ .ProjectName }}:latest-armv7"
+  - "Simplifi-ED/{{ .ProjectName }}:{{ .Version }}-armv64"
+  - "Simplifi-ED/{{ .ProjectName }}:latest-armv7"
   build_flag_templates:
   - "--platform=linux/arm64"
   - "--label=org.opencontainers.image.created={{.Date}}"
   - "--label=org.opencontainers.image.title={{.ProjectName}}"
   - "--label=org.opencontainers.image.revision={{.FullCommit}}"
   - "--label=org.opencontainers.image.version={{.Version}}"
+  extra_files:
+  - go.mod
+  - go.sum
+  - utils/startNode.go
+  - utils/stopNode.go
+  - internal/azure.go
+  - cmd/root.go
+  - main.go
 docker_manifests:
-- name_template: mundane/{{ .ProjectName }}:{{ .Version }}
+- name_template: Simplifi-ED/{{ .ProjectName }}:{{ .Version }}
   image_templates:
-  - mundane/{{ .ProjectName }}:{{ .Version }}-amd64
-  - mundane/{{ .ProjectName }}:{{ .Version }}-armv64
-- name_template: mundane/{{ .ProjectName }}:latest
+  - Simplifi-ED/{{ .ProjectName }}:{{ .Version }}-amd64
+  - Simplifi-ED/{{ .ProjectName }}:{{ .Version }}-armv64
+- name_template: Simplifi-ED/{{ .ProjectName }}:latest
   image_templates:
-  - mundane/{{ .ProjectName }}:latest-amd64
-  - mundane/{{ .ProjectName }}:latest-armv64
+  - Simplifi-ED/{{ .ProjectName }}:latest-amd64
+  - Simplifi-ED/{{ .ProjectName }}:latest-armv64
 
 snapshot:
   name_template: "{{ incpatch .Version }}-SNAPSHOT"
