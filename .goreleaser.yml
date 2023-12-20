@@ -5,6 +5,7 @@ builds:
 - binary: akslifecycle
   main: ./
   goos:
+  - windows
   - darwin
   - linux
   goarch:
@@ -33,24 +34,47 @@ archives:
   files:
   - README.md
   - LICENSE
-  # - completions/*
-
-# brews:
-# - name: akslifecycle
-#   homepage: "https://github.com/muandane/homebrew-tap"
-#   repository:
-#     owner: muandane
-#     name: homebrew-tap
-#   folder: Formula
-#   dependencies:
-#   - name: git
-#   commit_author:
-#     name: muandane
-#     email: zmoualhi@outlook.com
-#   extra_install: |-
-#     bash_completion.install "completions/akslifecycle.bash" => "akslifecycle"
-#     zsh_completion.install "completions/akslifecycle.zsh" => "_akslifecycle"
-#     fish_completion.install "completions/akslifecycle.fish"
 
 checksum:
   name_template: 'checksums.txt'
+
+dockers:
+- use: buildx
+  goos: linux
+  goarch: amd64
+  image_templates:
+  - "mundane/{{ .ProjectName }}:{{ .Version }}-amd64"
+  - "mundane/{{ .ProjectName }}:latest-amd64"
+  build_flag_templates:
+  - "--platform=linux/amd64"
+  - "--label=org.opencontainers.image.created={{.Date}}"
+  - "--label=org.opencontainers.image.title={{.ProjectName}}"
+  - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+  - "--label=org.opencontainers.image.version={{.Version}}"
+- use: buildx
+  goos: linux
+  goarch: arm64
+  image_templates:
+  - "mundane/{{ .ProjectName }}:{{ .Version }}-armv64"
+  - "mundane/{{ .ProjectName }}:latest-armv7"
+  build_flag_templates:
+  - "--platform=linux/arm64"
+  - "--label=org.opencontainers.image.created={{.Date}}"
+  - "--label=org.opencontainers.image.title={{.ProjectName}}"
+  - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+  - "--label=org.opencontainers.image.version={{.Version}}"
+docker_manifests:
+- name_template: mundane/{{ .ProjectName }}:{{ .Version }}
+  image_templates:
+  - mundane/{{ .ProjectName }}:{{ .Version }}-amd64
+  - mundane/{{ .ProjectName }}:{{ .Version }}-armv64
+- name_template: mundane/{{ .ProjectName }}:latest
+  image_templates:
+  - mundane/{{ .ProjectName }}:latest-amd64
+  - mundane/{{ .ProjectName }}:latest-armv64
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-SNAPSHOT"
+
+source:
+  enabled: true
