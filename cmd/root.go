@@ -6,6 +6,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"os/signal"
 	"sync"
 
 	"github.com/charmbracelet/log"
@@ -119,6 +120,17 @@ var rootCmd = &cobra.Command{
 			wg.Wait()
 		})
 
+		sigs := make(chan os.Signal, 1)
+		// Register the channel to receive SIGINT signals
+		signal.Notify(sigs, os.Interrupt)
+		// Create a goroutine to handle the SIGINT signal
+		go func() {
+			<-sigs
+			// Perform cleanup tasks here
+			fmt.Println("Received SIGINT signal. Performing cleanup tasks...")
+			// Exit the program
+			os.Exit(1)
+		}()
 		wg.Add(1)
 		wg.Wait()
 	},

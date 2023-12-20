@@ -1,0 +1,13 @@
+resources:
+- ResourceGroupName: rg-cluster-1
+  ClusterName: aks-cluster-1
+  nodePools:
+  - nodepool1
+  startSchedule: "2 14 * * 1-5"
+  stopSchedule: "36 14 * * 1-5"
+- ResourceGroupName: rg-cluster-2
+  ClusterName: aks-cluster-2
+  nodePools:
+  - nodepool2
+  startSchedule: "2 14 * * 1-5"
+  stopSchedule: "36 14 * * 1-5"
