@@ -43,8 +43,8 @@ dockers:
   goos: linux
   goarch: amd64
   image_templates:
-  - "Simplifi-ED/{{ .ProjectName }}:{{ .Version }}-amd64"
-  - "Simplifi-ED/{{ .ProjectName }}:latest-amd64"
+  - "simplifi-ed/{{ .ProjectName }}:{{ .Version }}-amd64"
+  - "simplifi-ed/{{ .ProjectName }}:latest-amd64"
   build_flag_templates:
   - "--platform=linux/amd64"
   - "--label=org.opencontainers.image.created={{.Date}}"
@@ -54,8 +54,8 @@ dockers:
   extra_files:
   - go.mod
   - go.sum
-  - utils/startNode.go
-  - utils/stopNode.go
+  - utils/lifecycle/startNode.go
+  - utils/lifecycle/stopNode.go
   - internal/azure.go
   - cmd/root.go
   - main.go
@@ -63,8 +63,8 @@ dockers:
   goos: linux
   goarch: arm64
   image_templates:
-  - "Simplifi-ED/{{ .ProjectName }}:{{ .Version }}-armv64"
-  - "Simplifi-ED/{{ .ProjectName }}:latest-armv7"
+  - "simplifi-ed/{{ .ProjectName }}:{{ .Version }}-armv64"
+  - "simplifi-ed/{{ .ProjectName }}:latest-armv7"
   build_flag_templates:
   - "--platform=linux/arm64"
   - "--label=org.opencontainers.image.created={{.Date}}"
@@ -74,20 +74,20 @@ dockers:
   extra_files:
   - go.mod
   - go.sum
-  - utils/startNode.go
-  - utils/stopNode.go
+  - utils/lifecycle/startNode.go
+  - utils/lifecycle/stopNode.go
   - internal/azure.go
   - cmd/root.go
   - main.go
 docker_manifests:
-- name_template: Simplifi-ED/{{ .ProjectName }}:{{ .Version }}
+- name_template: simplifi-ed/{{ .ProjectName }}:{{ .Version }}
   image_templates:
-  - Simplifi-ED/{{ .ProjectName }}:{{ .Version }}-amd64
-  - Simplifi-ED/{{ .ProjectName }}:{{ .Version }}-armv64
-- name_template: Simplifi-ED/{{ .ProjectName }}:latest
+  - simplifi-ed/{{ .ProjectName }}:{{ .Version }}-amd64
+  - simplifi-ed/{{ .ProjectName }}:{{ .Version }}-armv64
+- name_template: simplifi-ed/{{ .ProjectName }}:latest
   image_templates:
-  - Simplifi-ED/{{ .ProjectName }}:latest-amd64
-  - Simplifi-ED/{{ .ProjectName }}:latest-armv64
+  - simplifi-ed/{{ .ProjectName }}:latest-amd64
+  - simplifi-ed/{{ .ProjectName }}:latest-armv64
 
 snapshot:
   name_template: "{{ incpatch .Version }}-SNAPSHOT"
