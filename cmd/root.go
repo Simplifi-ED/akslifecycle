@@ -9,10 +9,10 @@ import (
 	"os/signal"
 	"sync"
 
+	"github.com/Simplifi-ED/akslifecycle/internal"
+	"github.com/Simplifi-ED/akslifecycle/utils/lifecycle"
 	"github.com/charmbracelet/log"
 	"github.com/fsnotify/fsnotify"
-	"github.com/muandane/akslifecycle/internal"
-	"github.com/muandane/akslifecycle/utils/lifecycle"
 	"github.com/robfig/cron/v3"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"

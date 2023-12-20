@@ -3,7 +3,7 @@
 
 package main
 
-import "github.com/muandane/akslifecycle/cmd"
+import "github.com/Simplifi-ED/akslifecycle/cmd"
 
 func main() {
 	cmd.Execute()

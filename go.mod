@@ -1,4 +1,4 @@
-module github.com/muandane/akslifecycle
+module github.com/Simplifi-ED/akslifecycle
 
 go 1.21.5
 
