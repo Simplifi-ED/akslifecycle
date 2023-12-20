@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright Authors of Akslifecycle
+
 package cmd
 
 import (
@@ -7,6 +10,7 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/fsnotify/fsnotify"
+	"github.com/muandane/akslifecycle/internal"
 	"github.com/muandane/akslifecycle/utils/lifecycle"
 	"github.com/robfig/cron/v3"
 	"github.com/spf13/cobra"
@@ -38,6 +42,9 @@ var rootCmd = &cobra.Command{
 	Short: "akslifecycle CLI",
 	Long:  `akslifecycle is a cli tool to start & stop nodes with cron schedule`,
 	Run: func(cmd *cobra.Command, args []string) {
+		azureAuth := internal.NewAzureAuth()
+		azureAuth.LogIntoAzure()
+
 		viper.SetConfigFile(configFile)
 
 		viper.WatchConfig()

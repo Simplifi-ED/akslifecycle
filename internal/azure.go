@@ -5,9 +5,9 @@ package internal
 
 import (
 	"context"
-	"fmt"
-	"log"
 	"os"
+
+	"github.com/charmbracelet/log"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
@@ -46,5 +46,5 @@ func (a *AzureAuth) LogIntoAzure() {
 		log.Fatalf("Failed to log into Azure: %v", err)
 	}
 
-	fmt.Printf("Logged into Azure with subscription ID: %s\n", subscriptionID)
+	log.Printf("Logged into Azure with subscription ID: %s", subscriptionID)
 }
