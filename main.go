@@ -1,4 +1,6 @@
-// Entrypoint to goji the conventional commit message generator
+// SPDX-License-Identifier: Apache-2.0
+// Copyright Authors of Akslifecycle
+
 package main
 
 import "github.com/muandane/akslifecycle/cmd"

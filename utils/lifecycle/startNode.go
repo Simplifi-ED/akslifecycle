@@ -1,17 +1,23 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright Authors of Akslifecycle
+
 package lifecycle
 
 import (
 	"fmt"
-	"log"
 	"os/exec"
+
+	"github.com/charmbracelet/log"
 )
 
 func StartNode(clusterName *string, resourceGroup *string, nodepoolName *string) {
-	log.Printf("Starting Cron for nodepool %s in cluster %s in resource group %s\n", *nodepoolName, *clusterName, *resourceGroup)
+	log.Printf("Starting nodepool %s in cluster %s in resource group %s", *nodepoolName, *clusterName, *resourceGroup)
 	startCmd := exec.Command("az", "aks", "nodepool", "start", "--resource-group", *resourceGroup, "--cluster-name", *clusterName, "--name", *nodepoolName)
-	output, err := startCmd.CombinedOutput()
+	_, err := startCmd.CombinedOutput()
 	if err != nil {
-		log.Println("Failed to start AKS nodepool:", err)
+		log.Errorf("Failed to start AKS nodepool: %v", err)
 	}
-	fmt.Println("Command output:", string(output))
+	fmt.Printf("ResourceGroup: %s\n", *resourceGroup)
+	fmt.Printf("Cluster: %s\n", *clusterName)
+	fmt.Printf("Name: %s\n", *nodepoolName)
 }
