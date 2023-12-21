@@ -11,6 +11,8 @@ permissions:
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
+    # env:
+    #   DOCKER_CLI_EXPERIMENTAL: "enabled"
     steps:
       - name: Check out code 
         uses: actions/checkout@v4.1.1
