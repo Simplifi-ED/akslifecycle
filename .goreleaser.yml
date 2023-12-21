@@ -40,8 +40,6 @@ checksum:
 
 dockers:
 - use: buildx
-  goos: linux
-  goarch: amd64
   image_templates:
   - "ghcr.io/simplifi-ed/{{ .ProjectName }}:{{ .Version }}-amd64"
   build_flag_templates:
@@ -63,10 +61,9 @@ dockers:
   - cmd/root.go
   - main.go
 - use: buildx
-  goos: linux
   goarch: arm64
   image_templates:
-  - "ghcr.io/simplifi-ed/{{ .ProjectName }}:{{ .Version }}-armv64v8"
+  - "ghcr.io/simplifi-ed/{{ .ProjectName }}:{{ .Version }}-arm64v8"
   build_flag_templates:
   - "--platform=linux/arm64/v8"
   - "--label=org.opencontainers.image.created={{.Date}}"
@@ -90,9 +87,5 @@ docker_manifests:
 - name_template: ghcr.io/simplifi-ed/{{ .ProjectName }}:{{ .Version }}
   image_templates:
   - ghcr.io/simplifi-ed/{{ .ProjectName }}:{{ .Version }}-amd64
-  - ghcr.io/simplifi-ed/{{ .ProjectName }}:{{ .Version }}-armv64v8
-- name_template: ghcr.io/simplifi-ed/{{ .ProjectName }}:latest
-  image_templates:
-  - ghcr.io/simplifi-ed/{{ .ProjectName }}:latest-amd64
-  - ghcr.io/simplifi-ed/{{ .ProjectName }}:latest-armv64v8
+  - ghcr.io/simplifi-ed/{{ .ProjectName }}:{{ .Version }}-arm64v8
 
