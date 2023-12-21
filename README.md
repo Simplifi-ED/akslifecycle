@@ -36,13 +36,13 @@ Before using the CLI tool, you need to define your node pools and the schedule f
 resources:
 - ResourceGroupName: rg-1
   ClusterName: cluster-1
-  nodePools:
+  NodePools:
   - nodepool1
   startSchedule: "0 8 * * 1-5"
   stopSchedule: "0 18 * * 1-5"
 - ResourceGroupName: rg-2
   ClusterName: cluster-2
-  nodePools:
+  NodePools:
   - nodepool2
   startSchedule: "0 9 * * 1-5"
   stopSchedule: "0 19 * * 1-5"

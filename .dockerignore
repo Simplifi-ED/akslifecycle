@@ -2,10 +2,10 @@
 .git
 .vscode
 /notes
-/skins
 README.md
 LICENSE
 .gitignore
 .golangci.yaml
 .goreleaser.yaml
 config-example.yml
+.config.yml
