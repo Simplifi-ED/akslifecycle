@@ -15,10 +15,10 @@ To get started with this CLI tool, you need to have the following prerequisites:
 - Azure CLI: You need to have the Azure CLI installed and configured on your machine. You can check your Azure CLI version by running az --version in your terminal. If you need to install or upgrade, refer to the Azure CLI installation guide.
 - Go: This project is written in Go, so you need to have Go installed on your machine. You can download Go from the official Go website.
 - You need to export these env variables:
-- `AZURE_SUBSCRIPTION_ID`: This is the ID of your Azure subscription.
-- `AZURE_CLIENT_ID`: This is the ID of your Azure Active Directory (AD) app registration.
-- `AZURE_TENANT_ID`: This is the ID of your Azure AD tenant.
-- `AZURE_CLIENT_SECRET`: This is the secret of your Azure AD app registration.
+  - `AZURE_SUBSCRIPTION_ID`: This is the ID of your Azure subscription.
+  - `AZURE_CLIENT_ID`: This is the ID of your Azure Active Directory (AD) app registration.
+  - `AZURE_TENANT_ID`: This is the ID of your Azure AD tenant.
+  - `AZURE_CLIENT_SECRET`: This is the secret of your Azure AD app registration.
 
 ### Installation
 

@@ -9,3 +9,4 @@ LICENSE
 .goreleaser.yaml
 config-example.yml
 .config.yml
+.pre-commit-config.yaml
