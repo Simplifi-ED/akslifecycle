@@ -44,7 +44,6 @@ dockers:
   goarch: amd64
   image_templates:
   - "ghcr.io/simplifi-ed/{{ .ProjectName }}:{{ .Version }}-amd64"
-  - "ghcr.io/simplifi-ed/{{ .ProjectName }}:latest-amd64"
   build_flag_templates:
   - "--platform=linux/amd64"
   - "--label=org.opencontainers.image.created={{.Date}}"
@@ -68,7 +67,6 @@ dockers:
   goarch: arm64
   image_templates:
   - "ghcr.io/simplifi-ed/{{ .ProjectName }}:{{ .Version }}-armv64v8"
-  - "ghcr.io/simplifi-ed/{{ .ProjectName }}:latest-armv64"
   build_flag_templates:
   - "--platform=linux/arm64/v8"
   - "--label=org.opencontainers.image.created={{.Date}}"
