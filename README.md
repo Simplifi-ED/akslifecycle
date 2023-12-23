@@ -1,7 +1,7 @@
 <div align="center">
 <h1 align="center">akslifecycle</h1>
 <br />
-<img alt="License: Apache" src="https://img.shields.io/badge/license-Apache%202-blue" /><br>
+<img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-blue.svg" /><br>
 <br>
 This repository provides a command-line interface (CLI) to manage the lifecycle of Azure Kubernetes Service (AKS) node pools. The node pools are defined in a config.yml file. The CLI tool can start and stop these node pools according to a defined schedule, which is also specified in the config.yml file.
 </div>
