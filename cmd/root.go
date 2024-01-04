@@ -1,13 +1,9 @@
-// SPDX-License-Identifier: GPL-3.0
-// Copyright Authors of Akslifecycle
-
 package cmd
 
 import (
 	"fmt"
 	"os"
 	"os/signal"
-	"sync"
 
 	"github.com/Simplifi-ED/akslifecycle/internal"
 	"github.com/Simplifi-ED/akslifecycle/utils/lifecycle"
@@ -35,7 +31,7 @@ var configFile string
 var (
 	config   Config
 	cronJobs []*cron.Cron
-	wg       sync.WaitGroup
+	done     chan bool
 )
 
 var rootCmd = &cobra.Command{
@@ -71,12 +67,11 @@ var rootCmd = &cobra.Command{
 			}
 			cronJobs = nil
 
-			wg.Add(len(config.Resources))
+			done = make(chan bool, len(config.Resources))
 			for _, resource := range config.Resources {
 
 				go func(resource Resource) {
 
-					defer wg.Done()
 					c := cron.New()
 
 					clusterName := resource.ClusterName
@@ -113,11 +108,15 @@ var rootCmd = &cobra.Command{
 
 					// Add the cron job to the slice
 					cronJobs = append(cronJobs, c)
+
+					done <- true
 				}(resource)
 			}
 
 			// Wait for all goroutines to finish
-			wg.Wait()
+			for i := 0; i < len(config.Resources); i++ {
+				<-done
+			}
 		})
 
 		sigs := make(chan os.Signal, 1)
@@ -131,8 +130,7 @@ var rootCmd = &cobra.Command{
 			// Exit the program
 			os.Exit(1)
 		}()
-		wg.Add(1)
-		wg.Wait()
+		<-done
 	},
 }
 
