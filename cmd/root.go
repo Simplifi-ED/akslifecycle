@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"sync"
 
 	"github.com/Simplifi-ED/akslifecycle/internal"
 	"github.com/Simplifi-ED/akslifecycle/utils/lifecycle"
@@ -31,8 +32,49 @@ var configFile string
 var (
 	config   Config
 	cronJobs []*cron.Cron
-	done     chan bool
+	wg       sync.WaitGroup
 )
+
+func worker(resource Resource, wg *sync.WaitGroup) {
+	defer wg.Done()
+	c := cron.New()
+	clusterName := resource.ClusterName
+	resourceGroup := resource.ResourceGroupName
+	startSchedule := resource.StartSchedule
+	stopSchedule := resource.StopSchedule
+
+	// Define the schedule for starting the program
+	_, err := c.AddFunc(startSchedule, func() {
+		for _, nodepool := range resource.NodePools {
+			nodepoolName := nodepool
+			lifecycle.StartNode(&clusterName, &resourceGroup, &nodepoolName)
+			log.Info("Waiting for next cron job...")
+		}
+		log.Info("All nodes started successfully.")
+	})
+	if err != nil {
+		log.Errorf("Failed to add cron job: %v", err)
+	}
+
+	// Define the schedule for stopping the program
+	_, err = c.AddFunc(stopSchedule, func() {
+		for _, nodepool := range resource.NodePools {
+			nodepoolName := nodepool
+			lifecycle.StopNode(&clusterName, &resourceGroup, &nodepoolName)
+			log.Info("Waiting for next cron job...")
+		}
+		log.Info("All nodes stopped successfully.")
+	})
+	if err != nil {
+		log.Errorf("Failed to add cron job: %v", err)
+	}
+
+	// Start the cron scheduler
+	c.Start()
+
+	// Add the cron job to the slice
+	cronJobs = append(cronJobs, c)
+}
 
 var rootCmd = &cobra.Command{
 	Use:   "akslifecycle",
@@ -41,8 +83,11 @@ var rootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		azureAuth := internal.NewAzureAuth()
 		azureAuth.LogIntoAzure()
-
-		viper.SetConfigFile(configFile)
+		if configFile != "" {
+			viper.SetConfigFile(configFile)
+		} else {
+			log.Fatalf("Failed to read config file")
+		}
 
 		viper.WatchConfig()
 
@@ -67,56 +112,13 @@ var rootCmd = &cobra.Command{
 			}
 			cronJobs = nil
 
-			done = make(chan bool, len(config.Resources))
+			wg.Add(len(config.Resources))
 			for _, resource := range config.Resources {
-
-				go func(resource Resource) {
-
-					c := cron.New()
-
-					clusterName := resource.ClusterName
-					resourceGroup := resource.ResourceGroupName
-					startSchedule := resource.StartSchedule
-					stopSchedule := resource.StopSchedule
-
-					// Define the schedule for starting the program
-					_, err := c.AddFunc(startSchedule, func() {
-						for _, nodepool := range resource.NodePools {
-							nodepoolName := nodepool
-							lifecycle.StartNode(&clusterName, &resourceGroup, &nodepoolName)
-							log.Info("Waiting for next cron job...")
-						}
-					})
-
-					if err != nil {
-						log.Errorf("Failed to add cron job: %v", err)
-					}
-					// Define the schedule for stopping the program
-					_, err = c.AddFunc(stopSchedule, func() {
-						for _, nodepool := range resource.NodePools {
-							nodepoolName := nodepool
-							lifecycle.StopNode(&clusterName, &resourceGroup, &nodepoolName)
-							log.Info("Waiting for next cron job...")
-						}
-					})
-					if err != nil {
-						log.Errorf("Failed to add cron job: %v", err)
-					}
-
-					// Start the cron scheduler
-					c.Start()
-
-					// Add the cron job to the slice
-					cronJobs = append(cronJobs, c)
-
-					done <- true
-				}(resource)
+				go worker(resource, &wg)
 			}
 
 			// Wait for all goroutines to finish
-			for i := 0; i < len(config.Resources); i++ {
-				<-done
-			}
+			wg.Wait()
 		})
 
 		sigs := make(chan os.Signal, 1)
@@ -130,7 +132,7 @@ var rootCmd = &cobra.Command{
 			// Exit the program
 			os.Exit(1)
 		}()
-		<-done
+		select {}
 	},
 }
 
