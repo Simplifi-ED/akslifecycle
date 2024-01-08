@@ -22,10 +22,43 @@ To get started with this CLI tool, you need to have the following prerequisites:
 
 ### Installation
 
+#### Build from source
+
 ```sh
 git clone https://github.com/muandane/akslifecycle.git
 cd akslifecycle
 go build
+```
+
+#### Using Docker image
+
+```sh
+docker run -d \
+-e AZURE_SUBSCRIPTION_ID=<your-subscription-id> \
+-e AZURE_CLIENT_ID=<your-client-id> \
+-e AZURE_TENANT_ID=<your-tenant-id> \
+-e AZURE_CLIENT_SECRET=<your-client-secret> \
+-v ./config.yml:/app/config.yml \
+--name akslifecycle \
+ghcr.io/simplifi-ed/akslifecycle:0.0.2 \
+-c config.yml
+```
+
+or using a docker compose:
+
+```yaml
+version: '3.8'
+services:
+  akslifecycle:
+    image: ghcr.io/simplifi-ed/akslifecycle:0.0.2  
+    volumes:
+      - ./config.yml:/app/config.yml
+    environment:
+    - AZURE_SUBSCRIPTION_ID=<your-subscription-id>
+    - AZURE_CLIENT_ID=<your-client-id>
+    - AZURE_TENANT_ID=<your-tenant-id>
+    - AZURE_CLIENT_SECRET=<your-client-secret>
+    command: ["/app/akslifecycle", "-c", "config.yml"]
 ```
 
 ### Usage
