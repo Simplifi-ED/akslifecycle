@@ -11,7 +11,7 @@ WORKDIR /akslifecycle
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -o ./akslifecycle
+RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -o ./akslifecycle -ldflags="-s -w"
 
 FROM --platform=${TARGETPLATFORM:-linux/amd64} scratch AS build-release-stage
 

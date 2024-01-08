@@ -1,7 +1,7 @@
 <div align="center">
 <h1 align="center">akslifecycle</h1>
 <br />
-<img alt="License: Apache" src="https://img.shields.io/badge/license-Apache%202-blue" /><br>
+<img alt="License: GPL v3" src="https://img.shields.io/badge/License-GPLv3-blue.svg"/><br>
 <br>
 This repository provides a command-line interface (CLI) to manage the lifecycle of Azure Kubernetes Service (AKS) node pools. The node pools are defined in a config.yml file. The CLI tool can start and stop these node pools according to a defined schedule, which is also specified in the config.yml file.
 </div>
@@ -15,17 +15,50 @@ To get started with this CLI tool, you need to have the following prerequisites:
 - Azure CLI: You need to have the Azure CLI installed and configured on your machine. You can check your Azure CLI version by running az --version in your terminal. If you need to install or upgrade, refer to the Azure CLI installation guide.
 - Go: This project is written in Go, so you need to have Go installed on your machine. You can download Go from the official Go website.
 - You need to export these env variables:
-- `AZURE_SUBSCRIPTION_ID`: This is the ID of your Azure subscription.
-- `AZURE_CLIENT_ID`: This is the ID of your Azure Active Directory (AD) app registration.
-- `AZURE_TENANT_ID`: This is the ID of your Azure AD tenant.
-- `AZURE_CLIENT_SECRET`: This is the secret of your Azure AD app registration.
+  - `AZURE_SUBSCRIPTION_ID`: This is the ID of your Azure subscription.
+  - `AZURE_CLIENT_ID`: This is the ID of your Azure Active Directory (AD) app registration.
+  - `AZURE_TENANT_ID`: This is the ID of your Azure AD tenant.
+  - `AZURE_CLIENT_SECRET`: This is the secret of your Azure AD app registration.
 
 ### Installation
+
+#### Build from source
 
 ```sh
 git clone https://github.com/muandane/akslifecycle.git
 cd akslifecycle
 go build
+```
+
+#### Using Docker image
+
+```sh
+docker run -d \
+-e AZURE_SUBSCRIPTION_ID=<your-subscription-id> \
+-e AZURE_CLIENT_ID=<your-client-id> \
+-e AZURE_TENANT_ID=<your-tenant-id> \
+-e AZURE_CLIENT_SECRET=<your-client-secret> \
+-v ./config.yml:/app/config.yml \
+--name akslifecycle \
+ghcr.io/simplifi-ed/akslifecycle:0.0.2 \
+-c config.yml
+```
+
+or using a docker compose:
+
+```yaml
+version: '3.8'
+services:
+  akslifecycle:
+    image: ghcr.io/simplifi-ed/akslifecycle:0.0.2  
+    volumes:
+      - ./config.yml:/app/config.yml
+    environment:
+    - AZURE_SUBSCRIPTION_ID=<your-subscription-id>
+    - AZURE_CLIENT_ID=<your-client-id>
+    - AZURE_TENANT_ID=<your-tenant-id>
+    - AZURE_CLIENT_SECRET=<your-client-secret>
+    command: ["/app/akslifecycle", "-c", "config.yml"]
 ```
 
 ### Usage
@@ -36,13 +69,13 @@ Before using the CLI tool, you need to define your node pools and the schedule f
 resources:
 - ResourceGroupName: rg-1
   ClusterName: cluster-1
-  nodePools:
+  NodePools:
   - nodepool1
   startSchedule: "0 8 * * 1-5"
   stopSchedule: "0 18 * * 1-5"
 - ResourceGroupName: rg-2
   ClusterName: cluster-2
-  nodePools:
+  NodePools:
   - nodepool2
   startSchedule: "0 9 * * 1-5"
   stopSchedule: "0 19 * * 1-5"
