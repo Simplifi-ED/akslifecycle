@@ -13,7 +13,10 @@ RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -o ./akslifecycle -ldflags="-s -w"
 
-FROM --platform=${TARGETPLATFORM:-linux/amd64} scratch AS build-release-stage
+FROM --platform=${TARGETPLATFORM:-linux/amd64} alpine:3.19 AS build-release-stage
+
+RUN apk add --no-cache ca-certificates
+
 
 WORKDIR /app
 COPY --from=build-stage /akslifecycle/akslifecycle ./
