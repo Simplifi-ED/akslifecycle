@@ -29,5 +29,7 @@ func LogIntoAzure() {
 	_, err = client.Get(context.TODO(), subscriptionID, nil)
 	if err != nil {
 		log.Fatalf("Failed to create Azure client: %v", err)
+	} else {
+		log.Info("Successfully logged into Azure and retrieved subscription.")
 	}
 }
