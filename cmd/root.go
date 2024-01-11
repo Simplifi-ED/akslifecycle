@@ -79,7 +79,6 @@ func loadConfig() {
 func reloadConfig() {
 	cronScheduler.Stop()
 	wg.Wait()
-	loadConfig()
 	setupCronJobs()
 	cronScheduler.Start()
 	log.Warnf("Config file reloaded successfully.")
