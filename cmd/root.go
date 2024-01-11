@@ -28,53 +28,9 @@ type Config struct {
 }
 
 var configFile string
-
-var (
-	config   Config
-	cronJobs []*cron.Cron
-	wg       sync.WaitGroup
-)
-
-func worker(resource Resource, wg *sync.WaitGroup) {
-	defer wg.Done()
-	c := cron.New()
-	clusterName := resource.ClusterName
-	resourceGroup := resource.ResourceGroupName
-	startSchedule := resource.StartSchedule
-	stopSchedule := resource.StopSchedule
-
-	// Define the schedule for starting the program
-	_, err := c.AddFunc(startSchedule, func() {
-		for _, nodepool := range resource.NodePools {
-			nodepoolName := nodepool
-			lifecycle.StartNode(&clusterName, &resourceGroup, &nodepoolName)
-			log.Info("Waiting for next cron job...")
-		}
-		log.Info("All nodes started successfully.")
-	})
-	if err != nil {
-		log.Errorf("Failed to add cron job: %v", err)
-	}
-
-	// Define the schedule for stopping the program
-	_, err = c.AddFunc(stopSchedule, func() {
-		for _, nodepool := range resource.NodePools {
-			nodepoolName := nodepool
-			lifecycle.StopNode(&clusterName, &resourceGroup, &nodepoolName)
-			log.Info("Waiting for next cron job...")
-		}
-		log.Info("All nodes stopped successfully.")
-	})
-	if err != nil {
-		log.Errorf("Failed to add cron job: %v", err)
-	}
-
-	// Start the cron scheduler
-	c.Start()
-
-	// Add the cron job to the slice
-	cronJobs = append(cronJobs, c)
-}
+var config Config
+var cronScheduler = cron.New()
+var wg sync.WaitGroup
 
 var rootCmd = &cobra.Command{
 	Use:   "akslifecycle",
@@ -82,60 +38,17 @@ var rootCmd = &cobra.Command{
 	Long:  `akslifecycle is a cli tool to start & stop nodes with cron schedule`,
 	Run: func(cmd *cobra.Command, args []string) {
 		internal.LogIntoAzure()
-		if configFile != "" {
-			viper.SetConfigFile(configFile)
-		} else {
-			log.Fatalf("Failed to read config file")
-		}
 
-		viper.WatchConfig()
+		setupSignalHandler()
+		loadConfig()
+		setupCronJobs()
 
-		viper.OnConfigChange(func(e fsnotify.Event) {
-			log.Warnf("Config file got updated: %v", e.Name)
-
-			err := viper.ReadInConfig()
-			if err != nil {
-				log.Fatalf("Failed to read config file: %v", err)
-				return
-			}
-
-			err = viper.Unmarshal(&config)
-			if err != nil {
-				log.Errorf("Failed to decode into struct, %v", err)
-				return
-			}
-			log.Info("Config is reloaded !")
-
-			for _, c := range cronJobs {
-				c.Stop()
-			}
-			cronJobs = nil
-
-			wg.Add(len(config.Resources))
-			for _, resource := range config.Resources {
-				go worker(resource, &wg)
-			}
-
-			// Wait for all goroutines to finish
-			wg.Wait()
-		})
-
-		sigs := make(chan os.Signal, 1)
-		// Register the channel to receive SIGINT signals
-		signal.Notify(sigs, os.Interrupt)
-		// Create a goroutine to handle the SIGINT signal
-		go func() {
-			<-sigs
-			// Perform cleanup tasks here
-			fmt.Println("Received SIGINT signal. Performing cleanup tasks...")
-			// Exit the program
-			os.Exit(1)
-		}()
-		select {}
+		cronScheduler.Run()
 	},
 }
 
 func init() {
+	viper.AutomaticEnv() // Bind environment variables [0][1]
 	rootCmd.PersistentFlags().StringVarP(&configFile, "config", "c", "", "config file to run aks lifecycle")
 }
 
@@ -144,4 +57,58 @@ func Execute() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+}
+
+func loadConfig() {
+	viper.SetConfigFile(configFile)
+	viper.WatchConfig()
+	viper.OnConfigChange(func(e fsnotify.Event) {
+		log.Warnf("Config file got updated: %v", e.Name)
+		reloadConfig()
+	})
+	if err := viper.ReadInConfig(); err != nil {
+		log.Errorf("Error reading config file: %v", err)
+		return
+	}
+	if err := viper.Unmarshal(&config); err != nil {
+		log.Errorf("Failed to decode into struct, %v", err)
+		return
+	}
+}
+
+func reloadConfig() {
+	cronScheduler.Stop()
+	wg.Wait()
+	loadConfig()
+	setupCronJobs()
+	cronScheduler.Start()
+	log.Warnf("Config file reloaded successfully.")
+}
+
+func setupCronJobs() {
+	for _, resource := range config.Resources {
+		resource := resource // Avoid capturing the loop variable [2]
+		cronScheduler.AddFunc(resource.StartSchedule, func() {
+			for _, nodepool := range resource.NodePools {
+				lifecycle.StartNode(&resource.ClusterName, &resource.ResourceGroupName, &nodepool)
+				log.Info("Waiting for next cron job...")
+			}
+		})
+		cronScheduler.AddFunc(resource.StopSchedule, func() {
+			for _, nodepool := range resource.NodePools {
+				lifecycle.StopNode(&resource.ClusterName, &resource.ResourceGroupName, &nodepool)
+				log.Info("Waiting for next cron job...")
+			}
+		})
+	}
+}
+
+func setupSignalHandler() {
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, os.Interrupt)
+	go func() {
+		<-sigs
+		fmt.Println("Received SIGINT signal. Configuration will be reloaded.")
+		reloadConfig()
+	}()
 }
