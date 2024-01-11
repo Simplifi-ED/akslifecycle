@@ -13,38 +13,21 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 )
 
-type AzureAuth struct {
-	credential *azidentity.DefaultAzureCredential
-	client     *armsubscription.SubscriptionsClient
-}
+func LogIntoAzure() {
 
-func NewAzureAuth() *AzureAuth {
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
 		log.Fatalf("Failed to create Azure credential: %v", err)
 	}
-
+	// Azure SDK Resource Management clients accept the credential as a parameter.
+	// The client will authenticate with the credential as necessary.
 	client, err := armsubscription.NewSubscriptionsClient(cred, nil)
 	if err != nil {
 		log.Fatalf("Failed to create Azure subscription client: %v", err)
 	}
-
-	return &AzureAuth{
-		credential: cred,
-		client:     client,
-	}
-}
-
-func (a *AzureAuth) LogIntoAzure() {
 	subscriptionID := os.Getenv("AZURE_SUBSCRIPTION_ID")
-	if subscriptionID == "" {
-		log.Fatalf("AZURE_SUBSCRIPTION_ID environment variable is not set")
-	}
-
-	_, err := a.client.Get(context.TODO(), subscriptionID, nil)
+	_, err = client.Get(context.TODO(), subscriptionID, nil)
 	if err != nil {
-		log.Fatalf("Failed to log into Azure: %v", err)
+		log.Fatalf("Failed to create Azure client: %v", err)
 	}
-
-	log.Printf("Logged into Azure with subscription ID: %s", subscriptionID)
 }
