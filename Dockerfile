@@ -17,7 +17,6 @@ FROM --platform=${TARGETPLATFORM:-linux/amd64} alpine:3.19 AS build-release-stag
 
 RUN apk add --no-cache ca-certificates
 
-
 WORKDIR /app
 COPY --from=build-stage /akslifecycle/akslifecycle ./
 

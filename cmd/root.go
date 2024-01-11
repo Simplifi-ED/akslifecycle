@@ -81,8 +81,7 @@ var rootCmd = &cobra.Command{
 	Short: "akslifecycle CLI",
 	Long:  `akslifecycle is a cli tool to start & stop nodes with cron schedule`,
 	Run: func(cmd *cobra.Command, args []string) {
-		azureAuth := internal.NewAzureAuth()
-		azureAuth.LogIntoAzure()
+		internal.LogIntoAzure()
 		if configFile != "" {
 			viper.SetConfigFile(configFile)
 		} else {
