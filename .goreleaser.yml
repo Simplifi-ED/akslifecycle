@@ -13,8 +13,8 @@ builds:
   - arm64
   env:
   - CGO_ENABLED=0
-  # ldflags:
-  # - -s -w -X github.com/muandane/akslifecycle/cmd.version={{.Version}}
+  ldflags:
+  - -s -w
 
 release:
   prerelease: auto
@@ -40,41 +40,52 @@ checksum:
 
 dockers:
 - use: buildx
-  goos: linux
-  goarch: amd64
   image_templates:
-  - "mundane/{{ .ProjectName }}:{{ .Version }}-amd64"
-  - "mundane/{{ .ProjectName }}:latest-amd64"
+  - "ghcr.io/simplifi-ed/{{ .ProjectName }}:{{ .Version }}-amd64"
   build_flag_templates:
   - "--platform=linux/amd64"
   - "--label=org.opencontainers.image.created={{.Date}}"
   - "--label=org.opencontainers.image.title={{.ProjectName}}"
+  - "--label=org.opencontainers.image.description={{ .ProjectName }}"
+  - "--label=org.opencontainers.image.url=https://github.com/Simplifi-ED/{{ .ProjectName }}"
+  - "--label=org.opencontainers.image.source=https://github.com/Simplifi-ED/{{ .ProjectName }}"
   - "--label=org.opencontainers.image.revision={{.FullCommit}}"
   - "--label=org.opencontainers.image.version={{.Version}}"
+  - "--label=org.opencontainers.image.licenses=GPL-3.0"
+  extra_files:
+  - go.mod
+  - go.sum
+  - utils/lifecycle/startNode.go
+  - utils/lifecycle/stopNode.go
+  - internal/azure.go
+  - cmd/root.go
+  - main.go
 - use: buildx
-  goos: linux
   goarch: arm64
   image_templates:
-  - "mundane/{{ .ProjectName }}:{{ .Version }}-armv64"
-  - "mundane/{{ .ProjectName }}:latest-armv7"
+  - "ghcr.io/simplifi-ed/{{ .ProjectName }}:{{ .Version }}-arm64v8"
   build_flag_templates:
-  - "--platform=linux/arm64"
+  - "--platform=linux/arm64/v8"
   - "--label=org.opencontainers.image.created={{.Date}}"
   - "--label=org.opencontainers.image.title={{.ProjectName}}"
+  - "--label=org.opencontainers.image.description={{ .ProjectName }}"
+  - "--label=org.opencontainers.image.url=https://github.com/Simplifi-ED/{{ .ProjectName }}"
+  - "--label=org.opencontainers.image.source=https://github.com/Simplifi-ED/{{ .ProjectName }}"
   - "--label=org.opencontainers.image.revision={{.FullCommit}}"
   - "--label=org.opencontainers.image.version={{.Version}}"
+  - "--label=org.opencontainers.image.licenses=GPL-3.0"
+  extra_files:
+  - go.mod
+  - go.sum
+  - utils/lifecycle/startNode.go
+  - utils/lifecycle/stopNode.go
+  - internal/azure.go
+  - cmd/root.go
+  - main.go
+
 docker_manifests:
-- name_template: mundane/{{ .ProjectName }}:{{ .Version }}
+- name_template: ghcr.io/simplifi-ed/{{ .ProjectName }}:{{ .Version }}
   image_templates:
-  - mundane/{{ .ProjectName }}:{{ .Version }}-amd64
-  - mundane/{{ .ProjectName }}:{{ .Version }}-armv64
-- name_template: mundane/{{ .ProjectName }}:latest
-  image_templates:
-  - mundane/{{ .ProjectName }}:latest-amd64
-  - mundane/{{ .ProjectName }}:latest-armv64
+  - ghcr.io/simplifi-ed/{{ .ProjectName }}:{{ .Version }}-amd64
+  - ghcr.io/simplifi-ed/{{ .ProjectName }}:{{ .Version }}-arm64v8
 
-snapshot:
-  name_template: "{{ incpatch .Version }}-SNAPSHOT"
-
-source:
-  enabled: true

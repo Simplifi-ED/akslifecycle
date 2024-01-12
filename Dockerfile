@@ -1,18 +1,23 @@
-FROM golang:1.21.5-alpine AS build-stage
+FROM --platform=${BUILDPLATFORM:-linux/amd64} golang:1.21.5 AS build-stage
+
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+ARG TARGETOS
+ARG TARGETARCH
+
+ENV GO111MODULE=on
 
 WORKDIR /akslifecycle
-
 COPY go.mod go.sum ./
 RUN go mod download
-COPY . ./
+COPY . .
+RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -o ./akslifecycle -ldflags="-s -w"
 
-RUN CGO_ENABLED=0 go build -o /akslifecycle
+FROM --platform=${TARGETPLATFORM:-linux/amd64} alpine:3.19 AS build-release-stage
 
-# Deploy the application binary into a lean image
-FROM gcr.io/distroless/base-debian11 AS build-release-stage
+RUN apk add --no-cache ca-certificates
 
 WORKDIR /app
+COPY --from=build-stage /akslifecycle/akslifecycle ./
 
-COPY --from=build-stage  akslifecycle /
-
-ENTRYPOINT ["/akslifecycle"]
+ENTRYPOINT ["/app/akslifecycle"]

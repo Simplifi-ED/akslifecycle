@@ -1,23 +1,44 @@
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: GPL-3.0
 // Copyright Authors of Akslifecycle
 
 package lifecycle
 
 import (
-	"fmt"
-	"os/exec"
+	"context"
+	"os"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v4"
 	"github.com/charmbracelet/log"
 )
 
 func StopNode(clusterName *string, resourceGroup *string, nodepoolName *string) {
 	log.Printf("Stopping nodepool %s in cluster %s in resource group %s", *nodepoolName, *clusterName, *resourceGroup)
-	stopCmd := exec.Command("az", "aks", "nodepool", "stop", "--resource-group", *resourceGroup, "--cluster-name", *clusterName, "--name", *nodepoolName)
-	_, err := stopCmd.CombinedOutput()
+
+	subscriptionID := os.Getenv("AZURE_SUBSCRIPTION_ID")
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
-		log.Errorf("Failed to stop AKS nodepool: %v", err)
+		log.Fatalf("failed to obtain a credential: %v", err)
 	}
-	fmt.Printf("ResourceGroup: %s\n", *resourceGroup)
-	fmt.Printf("Cluster: %s\n", *clusterName)
-	fmt.Printf("Name: %s\n", *nodepoolName)
+	ctx := context.Background()
+	clientFactory, err := armcontainerservice.NewClientFactory(subscriptionID, cred, nil)
+	if err != nil {
+		log.Fatalf("failed to create client: %v", err)
+	}
+	poller, err := clientFactory.NewAgentPoolsClient().BeginCreateOrUpdate(ctx, *resourceGroup, *clusterName, *nodepoolName, armcontainerservice.AgentPool{
+		Properties: &armcontainerservice.ManagedClusterAgentPoolProfileProperties{
+			PowerState: &armcontainerservice.PowerState{
+				Code: to.Ptr(armcontainerservice.CodeStopped),
+			},
+		},
+	}, nil)
+	if err != nil {
+		log.Fatalf("failed to finish the request: %v", err)
+	}
+	res, err := poller.PollUntilDone(ctx, nil)
+	if err != nil {
+		log.Fatalf("failed to pull the result: %v", err)
+	}
+	_ = res
 }
