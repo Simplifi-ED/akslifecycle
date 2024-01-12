@@ -10,12 +10,14 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v4"
+	"github.com/Simplifi-ED/akslifecycle/internal"
 	"github.com/charmbracelet/log"
 )
 
 func StopNode(clusterName *string, resourceGroup *string, nodepoolName *string) {
-	log.Printf("Stopping nodepool %s in cluster %s in resource group %s", *nodepoolName, *clusterName, *resourceGroup)
+	internal.LogIntoAzure()
 
+	log.Printf("Stopping nodepool %s in cluster %s in resource group %s", *nodepoolName, *clusterName, *resourceGroup)
 	subscriptionID := os.Getenv("AZURE_SUBSCRIPTION_ID")
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {

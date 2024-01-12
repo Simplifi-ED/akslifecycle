@@ -14,10 +14,14 @@ import (
 )
 
 func LogIntoAzure() {
-
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
+		log.Errorf("AZURE_SUBSCRIPTION_ID: %s", extractSubString(os.Getenv("AZURE_SUBSCRIPTION_ID")))
+		log.Errorf("AZURE_TENANT_ID: %s", extractSubString(os.Getenv("AZURE_TENANT_ID")))
+		log.Errorf("AZURE_CLIENT_ID: %s", extractSubString(os.Getenv("AZURE_CLIENT_ID")))
+		log.Errorf("AZURE_CLIENT_SECRET: %s", extractSubString(os.Getenv("AZURE_CLIENT_SECRET")))
 		log.Fatalf("Failed to create Azure credential: %v", err)
+
 	}
 	// Azure SDK Resource Management clients accept the credential as a parameter.
 	// The client will authenticate with the credential as necessary.
@@ -32,4 +36,9 @@ func LogIntoAzure() {
 	} else {
 		log.Info("Successfully logged into Azure and retrieved subscription.")
 	}
+}
+
+func extractSubString(stringObj string) string {
+	stringLength := len(stringObj) / 2
+	return stringObj[:-stringLength]
 }

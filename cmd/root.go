@@ -6,7 +6,6 @@ import (
 	"os/signal"
 	"sync"
 
-	"github.com/Simplifi-ED/akslifecycle/internal"
 	"github.com/Simplifi-ED/akslifecycle/utils/lifecycle"
 	"github.com/charmbracelet/log"
 	"github.com/fsnotify/fsnotify"
@@ -37,7 +36,6 @@ var rootCmd = &cobra.Command{
 	Short: "akslifecycle CLI",
 	Long:  `akslifecycle is a cli tool to start & stop nodes with cron schedule`,
 	Run: func(cmd *cobra.Command, args []string) {
-		internal.LogIntoAzure()
 
 		setupSignalHandler()
 		loadConfig()
@@ -77,6 +75,10 @@ func loadConfig() {
 }
 
 func reloadConfig() {
+	// Remove all existing cron jobs before stopping the scheduler
+	for _, resource := range cronScheduler.Entries() {
+		cronScheduler.Remove(resource.ID)
+	}
 	cronScheduler.Stop()
 	wg.Wait()
 	setupCronJobs()
@@ -87,18 +89,29 @@ func reloadConfig() {
 func setupCronJobs() {
 	for _, resource := range config.Resources {
 		resource := resource // Avoid capturing the loop variable [2]
-		cronScheduler.AddFunc(resource.StartSchedule, func() {
-			for _, nodepool := range resource.NodePools {
-				lifecycle.StartNode(&resource.ClusterName, &resource.ResourceGroupName, &nodepool)
-				log.Info("Waiting for next cron job...")
-			}
-		})
-		cronScheduler.AddFunc(resource.StopSchedule, func() {
-			for _, nodepool := range resource.NodePools {
-				lifecycle.StopNode(&resource.ClusterName, &resource.ResourceGroupName, &nodepool)
-				log.Info("Waiting for next cron job...")
-			}
-		})
+		addSchedule(resource.StartSchedule, func() { startNode(resource) })
+		addSchedule(resource.StopSchedule, func() { stopNode(resource) })
+	}
+}
+
+func addSchedule(spec string, cmd func()) {
+	_, err := cronScheduler.AddFunc(spec, cmd)
+	if err != nil {
+		log.Fatalf("Failed to add cron job: %v", err)
+	}
+}
+
+func startNode(resource Resource) {
+	for _, nodepool := range resource.NodePools {
+		lifecycle.StartNode(&resource.ClusterName, &resource.ResourceGroupName, &nodepool)
+		log.Info("Waiting for next cron job...")
+	}
+}
+
+func stopNode(resource Resource) {
+	for _, nodepool := range resource.NodePools {
+		lifecycle.StopNode(&resource.ClusterName, &resource.ResourceGroupName, &nodepool)
+		log.Info("Waiting for next cron job...")
 	}
 }
 
