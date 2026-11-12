@@ -3,7 +3,7 @@
 <br />
 <img alt="License: GPL v3" src="https://img.shields.io/badge/License-GPLv3-blue.svg"/><br>
 <br>
-This repository provides a command-line interface (CLI) to manage the lifecycle of Azure Kubernetes Service (AKS) node pools. The node pools are defined in a config.yml file. The CLI tool can start and stop these node pools according to a defined schedule, which is also specified in the config.yml file.
+This repository provides a command-line interface (CLI) to manage scheduled start/stop lifecycle operations for Azure Kubernetes Service (AKS) node pools.\n\n> **Status: maintenance.** Kept public as an existing Omnivya engineering project; it is not currently promoted as a flagship repository.
 </div>
 
 ***
@@ -25,7 +25,7 @@ To get started with this CLI tool, you need to have the following prerequisites:
 #### Build from source
 
 ```sh
-git clone https://github.com/muandane/akslifecycle.git
+git clone https://github.com/Simplifi-ED/akslifecycle.git
 cd akslifecycle
 go build
 ```
@@ -94,7 +94,7 @@ This will start the CLI tool, which will then start and stop the node pools acco
 
 ### License
 
-This project is licensed under the Apache license
+This project is licensed under the GNU General Public License v3.0. See [LICENSE](LICENSE).
 
 ### Show your support
 
